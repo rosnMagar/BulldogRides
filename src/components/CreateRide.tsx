@@ -1,7 +1,9 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { generateClient } from "aws-amplify/api";
 import type { Schema } from "../../amplify/data/resource";
 import { useAuth } from "../hooks/useAuth";
+import RouteMap from "./map/RouteMap";
+import { getAddress } from "../services/addressService";
 
 import {
     NumberInput,
@@ -9,7 +11,9 @@ import {
     Group,
     Paper,
     Title,
-    Container
+    Container,
+    TextInput,
+    Alert
 } from "@mantine/core";
 import { DateInput, TimeInput } from "@mantine/dates";
 
@@ -20,21 +24,53 @@ export default function CreateRide() {
 
     const [pickupLatitude, setPickupLatitude] = useState<number | string>("");
     const [pickupLongitude, setPickupLongitude] = useState<number | string>("");
+    const [pickupAddress, setPickupAddress] = useState<string>("");
     const [destinationLatitude, setDestinationLatitude] = useState<number | string>("");
     const [destinationLongitude, setDestinationLongitude] = useState<number | string>("");
+    const [destinationAddress, setDestinationAddress] = useState<string>("");
     const [pickupDate, setPickupDate] = useState<string | null>(null);
     const [pickupTime, setPickupTime] = useState<string>("");
     const [seats, setSeats] = useState<number | string>(3);
     const [loading, setLoading] = useState(false);
+    const [timeError, setTimeError] = useState<string | null>(null);
+    const [pickupAddressLoading, setPickupAddressLoading] = useState(false);
+    const [destinationAddressLoading, setDestinationAddressLoading] = useState(false);
+    const [submitSuccess, setSubmitSuccess] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     if (!user) {
         return <div style={{ padding: '2rem' }}>Loading user information...</div>;
     }
 
+    const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const time = e.currentTarget.value;
+        setPickupTime(time);
+
+        // If date is today, need to validate so that time is in the future 
+        const today = new Date().toISOString().split("T")[0];
+
+        if (pickupDate === today) {
+            const now = new Date();
+            const [hours, minutes] = time.split(':').map(Number);
+            if (hours < now.getHours() || (hours === now.getHours() && minutes <= now.getMinutes())) {
+                setTimeError("Time cannot be in the past");
+            } else {
+                setTimeError(null);
+            }
+        }
+    };
+
     async function handleSubmit() {
         if (!pickupLatitude || !pickupLongitude || !destinationLatitude || !destinationLongitude || !pickupDate || !pickupTime) return;
 
         setLoading(true);
+        setSubmitSuccess(false);
+        setSubmitError(null);
+
+        if (timeError) {
+            setLoading(false);
+            return;
+        }
 
         // Combine date (YYYY-MM-DD) and time (HH:MM) into a Date object
         const dateTimeStr = `${pickupDate}T${pickupTime}:00`;
@@ -54,15 +90,26 @@ export default function CreateRide() {
                 driverID: user?.id
             });
 
-            // onRideCreated();
+            // Success! Reset form
+            setSubmitSuccess(true);
+            setPickupLatitude("");
+            setPickupLongitude("");
+            setPickupAddress("");
+            setDestinationLatitude("");
+            setDestinationLongitude("");
+            setDestinationAddress("");
+            setPickupDate(null);
+            setPickupTime("");
+            setSeats(3);
         } catch (error) {
             console.error("Error creating ride:", error);
+            setSubmitError("Failed to create ride. Please try again.");
         } finally {
             setLoading(false);
         }
     }
     return (
-        <Container size="xs">
+        <Container size="md">
             <Paper withBorder shadow="md" p="xl" radius="md" mt="xl">
                 {
                     <div style={{ marginBottom: '1rem', fontSize: '0.9rem', color: '#666' }}>
@@ -71,44 +118,50 @@ export default function CreateRide() {
                 }
                 <Title order={3} mb="lg" ta="center">🚗 Post a Ride</Title>
 
+                {submitSuccess && (
+                    <Alert color="green" mb="md" onClose={() => setSubmitSuccess(false)} withCloseButton>
+                        Ride posted successfully!
+                    </Alert>
+                )}
+
+                {submitError && (
+                    <Alert color="red" mb="md" onClose={() => setSubmitError(null)} withCloseButton>
+                        {submitError}
+                    </Alert>
+                )}
                 <Group grow mb="md">
-                    <NumberInput
-                        label="Pickup Latitude"
-                        placeholder="e.g., 40.3495"
-                        required
-                        value={pickupLatitude}
-                        onChange={setPickupLatitude}
-                        step={0.0001}
-                    />
-                    <NumberInput
-                        label="Pickup Longitude"
-                        placeholder="e.g., -92.1787"
-                        required
-                        value={pickupLongitude}
-                        onChange={setPickupLongitude}
-                        step={0.0001}
+                    <TextInput
+                        label="Pickup Address"
+                        placeholder={pickupAddressLoading ? "Fetching address..." : "e.g., 123 Main St"}
+                        value={pickupAddress}
+                        onChange={(e) => setPickupAddress(e.currentTarget.value)}
+                        disabled={pickupAddressLoading}
                     />
                 </Group>
-
+                <RouteMap onPickupSelect={(lat, lng) => {
+                    setPickupLatitude(lat);
+                    setPickupLongitude(lng);
+                    setPickupAddressLoading(true);
+                    getAddress(lat, lng)
+                        .then(address => setPickupAddress(address))
+                        .finally(() => setPickupAddressLoading(false));
+                }} onDestinationSelect={(lat, lng) => {
+                    setDestinationLatitude(lat);
+                    setDestinationLongitude(lng);
+                    setDestinationAddressLoading(true);
+                    getAddress(lat, lng)
+                        .then(address => setDestinationAddress(address))
+                        .finally(() => setDestinationAddressLoading(false));
+                }} />
                 <Group grow mb="md">
-                    <NumberInput
-                        label="Destination Latitude"
-                        placeholder="e.g., 38.6270"
-                        required
-                        value={destinationLatitude}
-                        onChange={setDestinationLatitude}
-                        step={0.0001}
-                    />
-                    <NumberInput
-                        label="Destination Longitude"
-                        placeholder="e.g., -90.1994"
-                        required
-                        value={destinationLongitude}
-                        onChange={setDestinationLongitude}
-                        step={0.0001}
+                    <TextInput
+                        label="Destination Address"
+                        placeholder={destinationAddressLoading ? "Fetching address..." : "e.g., 123 Main St"}
+                        value={destinationAddress}
+                        onChange={(e) => setDestinationAddress(e.currentTarget.value)}
+                        disabled={destinationAddressLoading}
                     />
                 </Group>
-
                 <Group grow mb="md">
                     <DateInput
                         label="Departure Date"
@@ -116,12 +169,15 @@ export default function CreateRide() {
                         value={pickupDate}
                         onChange={setPickupDate}
                         required
+                        minDate={new Date().toISOString().split('T')[0]}
+                        maxDate={new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
                     />
                     <TimeInput
                         label="Departure Time"
                         value={pickupTime}
-                        onChange={(e) => setPickupTime(e.currentTarget.value)}
+                        onChange={handleTimeChange}
                         required
+                        error={timeError}
                     />
                 </Group>
 
@@ -133,13 +189,11 @@ export default function CreateRide() {
                     max={6}
                     mb="xl"
                 />
-
                 <Button
                     fullWidth
                     size="md"
                     loading={loading}
                     onClick={handleSubmit}
-                    color="blue"
                 >
                     Post Ride
                 </Button>

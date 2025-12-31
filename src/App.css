@@ -40,3 +40,8 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Fix Mantine DateInput dropdown appearing behind Leaflet map */
+.mantine-Popover-dropdown {
+  z-index: 9999 !important;
+}
