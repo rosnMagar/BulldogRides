@@ -17,7 +17,8 @@
     "aws-amplify": "^6.15.9",
     "dayjs": "^1.11.19",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-router": "^7.11.0"
   },
   "devDependencies": {
     "@aws-amplify/backend": "^1.19.0",

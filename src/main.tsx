@@ -9,7 +9,6 @@ import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import { MantineProvider } from '@mantine/core';
 
-
 Amplify.configure(outputs);
 
 createRoot(document.getElementById('root')!).render(
