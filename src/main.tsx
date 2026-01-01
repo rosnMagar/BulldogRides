@@ -20,7 +20,7 @@ const bulldogTheme = createTheme({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <MantineProvider theme={bulldogTheme}>
+    <MantineProvider theme={bulldogTheme} forceColorScheme='dark'>
       <App />
     </MantineProvider>
   </StrictMode>,

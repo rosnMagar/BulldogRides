@@ -5,8 +5,10 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 // Pages
 import LoginPage from './components/Authentication';
-import CreateRide from './components/CreateRide';
+import CreateRideOffer from './components/rides/CreateRideOffer';
+import CreateRideRequest from './components/rides/CreateRideRequest';
 import Dashboard from './components/Dashboard';
+import RideList from './components/RideList/RideList';
 
 /**
  * App Architecture:
@@ -17,7 +19,9 @@ import Dashboard from './components/Dashboard';
  *               ├── /login → LoginPage (public)
  *               └── ProtectedRoute (requires auth)
  *                     ├── / → Dashboard
- *                     └── /createRide → CreateRide
+ *                     ├── /offerRide → CreateRideOffer
+ *                     ├── /requestRide → CreateRideRequest
+ *                     └── /rides → RideList
  * 
  * How it works:
  * 1. AuthProvider checks for existing session on app load
@@ -35,10 +39,13 @@ export default function App() {
           {/* Protected routes - require authentication */}
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/createRide" element={<CreateRide />} />
+            <Route path="/offerRide" element={<CreateRideOffer />} />
+            <Route path="/requestRide" element={<CreateRideRequest />} />
+            <Route path="/rides" element={<RideList />} />
           </Route>
         </Routes>
       </BrowserRouter>
     </AuthProvider>
   )
 }
+

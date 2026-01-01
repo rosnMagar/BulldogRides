@@ -58,11 +58,29 @@ export default function Dashboard() {
                 <Stack gap="sm">
                     <Button
                         component={Link}
-                        to="/createRide"
+                        to="/offerRide"
                         size="md"
                         fullWidth
                     >
-                        Post a Ride
+                        Offer a Ride
+                    </Button>
+
+                    <Button
+                        component={Link}
+                        to="/requestRide"
+                        size="md"
+                        fullWidth
+                    >
+                        Request a Ride
+                    </Button>
+
+                    <Button
+                        component={Link}
+                        to="/rides"
+                        size="md"
+                        fullWidth
+                    >
+                        Ride List
                     </Button>
 
                     <Button
