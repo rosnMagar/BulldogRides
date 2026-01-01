@@ -24,6 +24,10 @@ export default function LocationFields({
 }: LocationFieldsProps) {
     return (
         <>
+            <RouteMap
+                onPickupSelect={onPickupSelect}
+                onDestinationSelect={onDestinationSelect}
+            />
             <Group grow mb="md">
                 <TextInput
                     label="Pickup Address"
@@ -33,12 +37,6 @@ export default function LocationFields({
                     disabled={pickupAddressLoading}
                 />
             </Group>
-
-            <RouteMap
-                onPickupSelect={onPickupSelect}
-                onDestinationSelect={onDestinationSelect}
-            />
-
             <Group grow mb="md" mt="md">
                 <TextInput
                     label="Destination Address"

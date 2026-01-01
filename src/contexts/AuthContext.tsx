@@ -3,7 +3,7 @@ import { Hub } from "aws-amplify/utils";
 import { createContext, useEffect, useState, type ReactNode } from "react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "../../amplify/data/resource";
-import type { AuthContextType, User } from "../types/auth";
+import type { AuthContextType, User, AppMode } from "../types/auth";
 
 // Initialize DynamoDB client
 const client = generateClient<Schema>();
@@ -14,6 +14,10 @@ export const AuthContext = createContext<AuthContextType>({
     isLoading: true,
     isAuthenticated: false,
     signOut: async () => { },
+    mode: "rider",
+    isDriver: false,
+    isRider: true,
+    toggleMode: () => { },
 });
 
 // 2. PROVIDER COMPONENT (fills the bucket with real data)
@@ -27,6 +31,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [mode, setMode] = useState<AppMode>("rider");
 
     // Check auth status when the app loads
     useEffect(() => {
@@ -44,6 +49,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 case 'signedOut':
                     setUser(null);
                     setIsAuthenticated(false);
+                    setMode("rider"); // Reset to rider on logout
                     break;
             }
         });
@@ -84,6 +90,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         await amplifySignOut();
         setUser(null);
         setIsAuthenticated(false);
+        setMode("rider");
+    };
+
+    // Toggle between driver and rider mode
+    const toggleMode = () => {
+        setMode((prev) => (prev === "driver" ? "rider" : "driver"));
     };
 
     // The value we're providing to all children
@@ -92,6 +104,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         isLoading,
         isAuthenticated,
         signOut: handleSignOut,
+        mode,
+        isDriver: mode === "driver",
+        isRider: mode === "rider",
+        toggleMode,
     };
 
     // Return the Provider with our state as the value

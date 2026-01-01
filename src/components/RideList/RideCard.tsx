@@ -1,4 +1,4 @@
-import { Card, Text, Group, Badge, Stack, Divider } from "@mantine/core";
+import { Card, Text, Group, Badge, Stack, Divider, Button } from "@mantine/core";
 import type { Schema } from "../../../amplify/data/resource";
 import MiniMap from "../map/MiniMap";
 
@@ -87,16 +87,20 @@ export default function RideCard({ ride }: RideCardProps) {
                 {/* Details */}
                 <Group justify="space-between">
                     <Text size="sm">{formatDateTime(ride.pickupTime)}</Text>
-                    <Badge color={getStatusColor(ride.status)} variant="light">
-                        {ride.status || "Unknown"}
-                    </Badge>
+                    <Group>
+                        <Badge color={getStatusColor(ride.status)} variant="light">
+                            {ride.status || "Unknown"}
+                        </Badge>
+                        {rewardText && (
+                            <Badge variant="outline" color="gray">{rewardText}</Badge>
+                        )}
+                    </Group>
                 </Group>
-
                 <Group justify="space-between">
                     <Text size="sm">{ride.seatsAvailable} seats available</Text>
-                    {rewardText && (
-                        <Badge variant="outline" color="gray">{rewardText}</Badge>
-                    )}
+                    <Button size="xs">
+                        Join Ride
+                    </Button>
                 </Group>
             </Stack>
         </Card>

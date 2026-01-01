@@ -1,37 +1,28 @@
 import { useAuth } from "../hooks/useAuth";
-import { Link } from "react-router";
 import {
     Container,
     Title,
     Text,
-    Button,
-    Group,
     Paper,
     Avatar,
     Stack,
-    Badge,
 } from "@mantine/core";
 
 /**
  * Dashboard - The main page after login
- * Shows user info and navigation to other features
+ * Shows user info. Navigation is now handled by AppLayout.
  */
 export default function Dashboard() {
-    const { user, signOut } = useAuth();
+    const { user } = useAuth();
 
     return (
         <Container size="sm" py="xl">
             <Paper withBorder shadow="md" p="xl" radius="md">
                 {/* Header */}
-                <Group justify="space-between" mb="xl">
-                    <Title order={2}>🐶 Bulldog Rides</Title>
-                    <Badge color="violet" variant="light" size="lg">
-                        Logged In
-                    </Badge>
-                </Group>
+                <Title order={2} mb="xl" ta="center">Welcome Back</Title>
 
                 {/* User Info */}
-                <Stack align="center" mb="xl">
+                <Stack align="center">
                     <Avatar
                         size="xl"
                         radius="xl"
@@ -52,46 +43,6 @@ export default function Dashboard() {
                             </Text>
                         )}
                     </Stack>
-                </Stack>
-
-                {/* Actions */}
-                <Stack gap="sm">
-                    <Button
-                        component={Link}
-                        to="/offerRide"
-                        size="md"
-                        fullWidth
-                    >
-                        Offer a Ride
-                    </Button>
-
-                    <Button
-                        component={Link}
-                        to="/requestRide"
-                        size="md"
-                        fullWidth
-                    >
-                        Request a Ride
-                    </Button>
-
-                    <Button
-                        component={Link}
-                        to="/rides"
-                        size="md"
-                        fullWidth
-                    >
-                        Ride List
-                    </Button>
-
-                    <Button
-                        variant="subtle"
-                        color="gray"
-                        size="md"
-                        fullWidth
-                        onClick={signOut}
-                    >
-                        Sign Out
-                    </Button>
                 </Stack>
             </Paper>
         </Container>

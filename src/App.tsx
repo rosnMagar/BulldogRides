@@ -2,6 +2,7 @@ import './App.css'
 import { Routes, Route, BrowserRouter } from 'react-router';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import AppLayout from './components/layout/AppLayout';
 
 // Pages
 import LoginPage from './components/Authentication';
@@ -13,20 +14,16 @@ import RideList from './components/RideList/RideList';
 /**
  * App Architecture:
  * 
- * AuthProvider (top-level, wraps everything)
+ * AuthProvider (top-level, wraps everything - includes auth + app mode)
  *   └── BrowserRouter
  *         └── Routes
  *               ├── /login → LoginPage (public)
  *               └── ProtectedRoute (requires auth)
- *                     ├── / → Dashboard
- *                     ├── /offerRide → CreateRideOffer
- *                     ├── /requestRide → CreateRideRequest
- *                     └── /rides → RideList
- * 
- * How it works:
- * 1. AuthProvider checks for existing session on app load
- * 2. If user navigates to a protected route without auth, they're redirected to /login
- * 3. After login, they can access all protected routes
+ *                     └── AppLayout (with navbar)
+ *                           ├── / → Dashboard
+ *                           ├── /offerRide → CreateRideOffer
+ *                           ├── /requestRide → CreateRideRequest
+ *                           └── /rides → RideList
  */
 export default function App() {
   return (
@@ -38,14 +35,15 @@ export default function App() {
 
           {/* Protected routes - require authentication */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/offerRide" element={<CreateRideOffer />} />
-            <Route path="/requestRide" element={<CreateRideRequest />} />
-            <Route path="/rides" element={<RideList />} />
+            <Route element={<AppLayout />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/offerRide" element={<CreateRideOffer />} />
+              <Route path="/requestRide" element={<CreateRideRequest />} />
+              <Route path="/rides" element={<RideList />} />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>
     </AuthProvider>
   )
 }
-
