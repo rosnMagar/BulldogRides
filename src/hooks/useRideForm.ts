@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { client } from "../lib/amplifyClient";
 import { getAddress } from "../services/addressService";
-import { useAuth } from "../hooks/useAuth";
 
 type RideType = "OFFER" | "REQUEST";
 
@@ -51,9 +50,6 @@ interface UseRideFormReturn {
 }
 
 export function useRideForm({ type, onSuccess }: UseRideFormOptions): UseRideFormReturn {
-
-    // User Information
-    const { user } = useAuth();
 
     // Pickup state
     const [pickupLatitude, setPickupLatitude] = useState<number | string>("");
@@ -135,12 +131,11 @@ export function useRideForm({ type, onSuccess }: UseRideFormOptions): UseRideFor
         destinationLongitude &&
         date &&
         time &&
-        !timeError &&
-        user?.id
+        !timeError
     );
 
     const handleSubmit = useCallback(async () => {
-        if (!isFormValid || !user?.id) return;
+        if (!isFormValid) return;
 
         setLoading(true);
         setSubmitSuccess(false);
@@ -152,10 +147,9 @@ export function useRideForm({ type, onSuccess }: UseRideFormOptions): UseRideFor
         const utcDateTime = localDateTime.toISOString();
 
         try {
-            await client.models.Ride.create({
+            // Use secure server-side mutation (driverID determined from identity)
+            const { data, errors } = await client.mutations.createSecureRide({
                 type: type,
-                status: "OPEN",
-                driverID: user.id,
                 pickupLat: Number(pickupLatitude),
                 pickupLong: Number(pickupLongitude),
                 pickupAddress: pickupAddress || undefined,
@@ -166,12 +160,16 @@ export function useRideForm({ type, onSuccess }: UseRideFormOptions): UseRideFor
                 seatsAvailable: Number(seats),
             });
 
+            if (errors || !data?.success) {
+                throw new Error(data?.error || errors?.[0]?.message || "Failed to create ride");
+            }
+
             setSubmitSuccess(true);
             resetForm();
             onSuccess?.();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error creating ride:", error);
-            setSubmitError("Failed to create ride. Please try again.");
+            setSubmitError(error.message || "Failed to create ride. Please try again.");
         } finally {
             setLoading(false);
         }

@@ -7,7 +7,9 @@ import { Amplify } from 'aws-amplify';
 
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
+import '@mantine/notifications/styles.css';
 import { MantineProvider, createTheme } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
 
 Amplify.configure(outputs);
 
@@ -21,6 +23,7 @@ const bulldogTheme = createTheme({
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MantineProvider theme={bulldogTheme} forceColorScheme='dark'>
+      <Notifications position="top-right" zIndex={100000} />
       <App />
     </MantineProvider>
   </StrictMode>,

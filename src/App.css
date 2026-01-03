@@ -41,7 +41,18 @@
   color: #888;
 }
 
-/* Fix Mantine DateInput dropdown appearing behind Leaflet map */
-.mantine-Popover-dropdown {
-  z-index: 9999 !important;
+/* Fix Mantine overlays appearing behind Leaflet map (z-index 400+) */
+.mantine-Popover-dropdown,
+.mantine-Modal-root,
+.mantine-Modal-overlay,
+.mantine-Modal-inner,
+.mantine-Drawer-root,
+.mantine-Drawer-overlay,
+.mantine-Drawer-inner,
+.mantine-Notifications-root,
+.mantine-Tooltip-tooltip,
+.mantine-Menu-dropdown,
+.mantine-Select-dropdown,
+.mantine-DatePickerInput-dropdown {
+  z-index: 100000 !important;
 }

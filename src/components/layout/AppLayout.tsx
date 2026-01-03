@@ -2,11 +2,14 @@ import { Outlet, useNavigate } from "react-router";
 import { AppShell, Avatar, Burger, Group, Switch, Title, Tooltip } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import NavLinks from "./NavLinks";
+import NotificationBell from "../notifications/NotificationBell";
+import NotificationDrawer from "../notifications/NotificationDrawer";
 import { useAuth } from "../../hooks/useAuth";
 import { IconUser, IconSteeringWheel } from "@tabler/icons-react";
 
 export default function AppLayout() {
     const [opened, { toggle, close }] = useDisclosure();
+    const [notificationsOpened, { open: openNotifications, close: closeNotifications }] = useDisclosure();
     const { user, isDriver, toggleMode } = useAuth();
     const navigate = useNavigate();
 
@@ -48,6 +51,7 @@ export default function AppLayout() {
                                 offLabel={<IconUser size={20} stroke={2.5} color="var(--mantine-color-yellow-4)" />}
                             />
                         </Tooltip>
+                        <NotificationBell onClick={openNotifications} />
                         {user && (
                             <Group>
                                 <Avatar
@@ -70,6 +74,11 @@ export default function AppLayout() {
             <AppShell.Main>
                 <Outlet />
             </AppShell.Main>
+
+            <NotificationDrawer
+                opened={notificationsOpened}
+                onClose={closeNotifications}
+            />
         </AppShell>
     );
 }

@@ -1,6 +1,9 @@
 import { Card, Text, Group, Badge, Stack, Divider, Button } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import type { Schema } from "../../../amplify/data/resource";
 import MiniMap from "../map/MiniMap";
+import { useRideRequests } from "../../hooks/useRideRequests";
+import { useAuth } from "../../hooks/useAuth";
 
 type Ride = Schema["Ride"]["type"];
 
@@ -44,10 +47,49 @@ function getRewardText(reward: string | null | undefined): string {
 }
 
 export default function RideCard({ ride }: RideCardProps) {
+    const { user } = useAuth();
+    const { createRequest, loading, error } = useRideRequests();
+
+    // Format reward text
+    const getRewardText = (reward: string | null | undefined, description: string | null | undefined): string => {
+        if (!reward || reward === 'NONE') return '';
+        if (reward === 'OTHER' && description) return description;
+        return reward.replace('_', ' ');
+    };
+    const rewardText = getRewardText(ride.reward, ride.rewardDescription);
+
+    const handleJoinRide = async () => {
+        if (!user?.id) {
+            notifications.show({
+                title: 'Error',
+                message: 'You must be logged in to join a ride',
+                color: 'red'
+            });
+            return;
+        }
+
+        // User ID is determined server-side from authenticated identity
+        const success = await createRequest(ride.id);
+
+        if (success) {
+            notifications.show({
+                title: 'Request sent!',
+                message: 'The driver will be notified of your request',
+                color: 'green'
+            });
+        } else if (error) {
+            notifications.show({
+                title: 'Failed to join ride',
+                message: error,
+                color: 'red'
+            });
+        }
+    };
+
+    const isOwnRide = ride.driverID === user?.id;
+    const isFull = (ride.seatsAvailable || 0) <= 0;
     const pickupDisplay = ride.pickupAddress || `${ride.pickupLat?.toFixed(4)}, ${ride.pickupLong?.toFixed(4)}`;
     const destinationDisplay = ride.destinationAddress || `${ride.destinationLat?.toFixed(4)}, ${ride.destinationLong?.toFixed(4)}`;
-    const rewardText = getRewardText(ride.reward);
-
     // Check if we have valid coordinates for the map
     const hasValidCoordinates =
         ride.pickupLat != null &&
@@ -98,8 +140,13 @@ export default function RideCard({ ride }: RideCardProps) {
                 </Group>
                 <Group justify="space-between">
                     <Text size="sm">{ride.seatsAvailable} seats available</Text>
-                    <Button size="xs">
-                        Join Ride
+                    <Button
+                        size="xs"
+                        onClick={handleJoinRide}
+                        loading={loading}
+                        disabled={isOwnRide || isFull}
+                    >
+                        {isOwnRide ? "Your Ride" : isFull ? "Full" : "Join Ride"}
                     </Button>
                 </Group>
             </Stack>

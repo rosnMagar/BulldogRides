@@ -1,4 +1,9 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { joinRide } from '../functions/join-ride/resource';
+import { postConfirmation } from '../auth/post-confirmation/resource';
+import { notificationOperations } from '../functions/notification-operations/resource';
+import { rideOperations } from '../functions/ride-operations/resource';
+import { rideRequestOperations } from '../functions/ride-request-operations/resource';
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -19,6 +24,8 @@ const schema = a.schema({
       // Relationships
       ridesAsDriver: a.hasMany('Ride', 'driverID'),
       ridesAsPassenger: a.hasMany('RidePassenger', 'passengerID'),
+      rideRequests: a.hasMany('RideRequest', 'requesterID'),
+      notifications: a.hasMany('Notification', 'userID'),
     })
     .authorization((allow) => [allow.owner(), allow.authenticated().to(['read'])]),
 
@@ -48,6 +55,7 @@ const schema = a.schema({
 
     // Relationships: PASSENGERS
     passengers: a.hasMany('RidePassenger', 'rideID'),
+    requests: a.hasMany('RideRequest', 'rideID'),
   }).authorization((allow) => [allow.authenticated()]),
 
   RidePassenger: a.model({
@@ -57,7 +65,142 @@ const schema = a.schema({
     passenger: a.belongsTo('User', 'passengerID'),
   }).authorization((allow) => [allow.authenticated()]),
 
-})
+  // Join requests from riders wanting to join a ride
+  // SECURITY: Users can only read. Creation happens via joinRide mutation (Lambda)
+  RideRequest: a.model({
+    status: a.enum(['PENDING', 'ACCEPTED', 'DECLINED']),
+    message: a.string(), // Optional message from requester
+
+    // Relationships
+    rideID: a.id().required(),
+    ride: a.belongsTo('Ride', 'rideID'),
+    requesterID: a.id().required(),
+    requester: a.belongsTo('User', 'requesterID'),
+  }).authorization((allow) => [
+    allow.authenticated().to(['read'])  // Users can read requests (filtered by AppSync)
+    // Creation happens only via Lambda (joinRide mutation)
+  ]),
+
+  // In-app notifications
+  Notification: a.model({
+    type: a.enum(['RIDE_REQUEST', 'REQUEST_ACCEPTED', 'REQUEST_DECLINED', 'RIDE_REMINDER']),
+    title: a.string().required(),
+    message: a.string().required(),
+    read: a.boolean().default(false),
+
+    // Recipient
+    userID: a.id().required(),
+    user: a.belongsTo('User', 'userID'),
+
+    // Related entities (optional)
+    relatedRideID: a.id(),
+    relatedRequestID: a.id(),
+  }).authorization((allow) => [allow.owner()]),
+
+  // Custom response type for joinRide mutation
+  JoinRideResponse: a.customType({
+    success: a.boolean(),
+    error: a.string(),
+    request: a.json()
+  }),
+
+  // Custom type for notification item
+  NotificationItem: a.customType({
+    id: a.string(),
+    type: a.string(),
+    title: a.string(),
+    message: a.string(),
+    read: a.boolean(),
+    userID: a.string(),
+    relatedRideID: a.string(),
+    relatedRequestID: a.string(),
+    createdAt: a.string(),
+    updatedAt: a.string(),
+  }),
+
+  // Custom response type for getMyNotifications query
+  GetNotificationsResponse: a.customType({
+    success: a.boolean(),
+    error: a.string(),
+    notifications: a.json(),
+    unreadCount: a.integer(),
+  }),
+
+  // Custom response type for markNotificationAsRead mutation
+  MarkAsReadResponse: a.customType({
+    success: a.boolean(),
+    error: a.string(),
+  }),
+
+  // Custom mutation for joining a ride (server-side validation)
+  joinRide: a.mutation()
+    .arguments({
+      rideID: a.string().required(),
+      message: a.string()
+    })
+    .returns(a.ref('JoinRideResponse'))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(joinRide)),
+
+  // Custom query for getting user's notifications (server-side identity)
+  getMyNotifications: a.query()
+    .arguments({})
+    .returns(a.ref('GetNotificationsResponse'))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(notificationOperations)),
+
+  // Custom mutation for marking notification as read (server-side identity)
+  markNotificationAsRead: a.mutation()
+    .arguments({
+      notificationID: a.string().required()
+    })
+    .returns(a.ref('MarkAsReadResponse'))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(notificationOperations)),
+
+  // Custom response type for createRide mutation
+  CreateRideResponse: a.customType({
+    success: a.boolean(),
+    error: a.string(),
+    rideID: a.string(),
+  }),
+
+  // Custom mutation for creating a ride (server-side identity for driverID)
+  createSecureRide: a.mutation()
+    .arguments({
+      type: a.string().required(),
+      pickupLat: a.float().required(),
+      pickupLong: a.float().required(),
+      pickupAddress: a.string(),
+      destinationLat: a.float().required(),
+      destinationLong: a.float().required(),
+      destinationAddress: a.string(),
+      pickupTime: a.string().required(),
+      seatsAvailable: a.integer().required(),
+      reward: a.string(),
+      rewardDescription: a.string(),
+    })
+    .returns(a.ref('CreateRideResponse'))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(rideOperations)),
+
+  // Custom response type for respondToRideRequest mutation
+  RespondToRequestResponse: a.customType({
+    success: a.boolean(),
+    error: a.string(),
+  }),
+
+  // Custom mutation for responding to a ride request (accept/decline)
+  respondToRideRequest: a.mutation()
+    .arguments({
+      requestID: a.string().required(),
+      response: a.string().required(),  // 'ACCEPT' or 'DECLINE'
+    })
+    .returns(a.ref('RespondToRequestResponse'))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(rideRequestOperations)),
+
+}).authorization((allow) => [allow.resource(postConfirmation), allow.resource(joinRide), allow.resource(notificationOperations), allow.resource(rideOperations), allow.resource(rideRequestOperations)]);
 
 export type Schema = ClientSchema<typeof schema>;
 

@@ -1,4 +1,5 @@
 import { defineAuth } from '@aws-amplify/backend';
+import { postConfirmation } from './post-confirmation/resource';
 
 /**
  * Define and configure your auth resource
@@ -9,7 +10,7 @@ export const auth = defineAuth({
     email: {
       verificationEmailStyle: 'CODE',
       verificationEmailSubject: 'Welcome to Bulldog Rides - Verify your email',
-      // verificationEmailBody: (createdCode) => `Welcome to Bulldog Rides! Please verify your email using the code: ${createdCode()}.\nThis Expires in 15 minutes.`,
+      // verificationEmailBody: (createdCode) => `Welcome to Bulldog Rides! Please verify your email using the code: ${createdCode()}.\\nThis Expires in 15 minutes.`,
     },
   },
   senders: {
@@ -18,6 +19,9 @@ export const auth = defineAuth({
     }
   },
   userAttributes: {
-    "phoneNumber": { required: false, mutable: true}
+    "phoneNumber": { required: false, mutable: true }
   },
+  triggers: {
+    postConfirmation
+  }
 });
