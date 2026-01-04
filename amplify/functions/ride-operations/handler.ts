@@ -67,11 +67,14 @@ export const handler: AppSyncResolverHandler<CreateRideArgs, CreateRideResponse>
             };
         }
 
-        // Create the ride with verified driverID
+        // Create the ride with verified user ID
+        // For OFFER: user is the driver
+        // For REQUEST: user is the creator (driver assigned later)
         const { data: ride, errors } = await client.models.Ride.create({
             type: args.type,
             status: "OPEN",
-            driverID: driverID, // Server-verified user ID
+            creatorID: driverID, // Server-verified user ID - always set as creator
+            driverID: args.type === 'OFFER' ? driverID : undefined, // Only set driver for OFFER type
             pickupLat: args.pickupLat,
             pickupLong: args.pickupLong,
             pickupAddress: args.pickupAddress || undefined,

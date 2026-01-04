@@ -27,7 +27,7 @@ export default function AppLayout() {
                 breakpoint: "sm",
                 collapsed: { mobile: !opened },
             }}
-            padding="md"
+            padding="xs"
         >
             <AppShell.Header style={{ zIndex: 1100 }}>
                 <Group h="100%" px="md" justify="space-between">

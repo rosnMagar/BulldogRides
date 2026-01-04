@@ -4,6 +4,7 @@ import { postConfirmation } from '../auth/post-confirmation/resource';
 import { notificationOperations } from '../functions/notification-operations/resource';
 import { rideOperations } from '../functions/ride-operations/resource';
 import { rideRequestOperations } from '../functions/ride-request-operations/resource';
+import { assignDriver } from '../functions/assign-driver/resource';
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -23,6 +24,7 @@ const schema = a.schema({
 
       // Relationships
       ridesAsDriver: a.hasMany('Ride', 'driverID'),
+      ridesAsCreator: a.hasMany('Ride', 'creatorID'),
       ridesAsPassenger: a.hasMany('RidePassenger', 'passengerID'),
       rideRequests: a.hasMany('RideRequest', 'requesterID'),
       notifications: a.hasMany('Notification', 'userID'),
@@ -52,6 +54,10 @@ const schema = a.schema({
     // Relationships: DRIVER
     driverID: a.id(),
     driver: a.belongsTo('User', 'driverID'),
+
+    // Relationships: CREATOR (who posted the ride)
+    creatorID: a.id().required(),
+    creator: a.belongsTo('User', 'creatorID'),
 
     // Relationships: PASSENGERS
     passengers: a.hasMany('RidePassenger', 'rideID'),
@@ -83,7 +89,7 @@ const schema = a.schema({
 
   // In-app notifications
   Notification: a.model({
-    type: a.enum(['RIDE_REQUEST', 'REQUEST_ACCEPTED', 'REQUEST_DECLINED', 'RIDE_REMINDER']),
+    type: a.enum(['RIDE_REQUEST', 'REQUEST_ACCEPTED', 'REQUEST_DECLINED', 'RIDE_REMINDER', 'DRIVER_ASSIGNED']),
     title: a.string().required(),
     message: a.string().required(),
     read: a.boolean().default(false),
@@ -200,7 +206,22 @@ const schema = a.schema({
     .authorization((allow) => [allow.authenticated()])
     .handler(a.handler.function(rideRequestOperations)),
 
-}).authorization((allow) => [allow.resource(postConfirmation), allow.resource(joinRide), allow.resource(notificationOperations), allow.resource(rideOperations), allow.resource(rideRequestOperations)]);
+  // Custom response type for assignDriverToRide mutation
+  AssignDriverResponse: a.customType({
+    success: a.boolean(),
+    error: a.string(),
+  }),
+
+  // Custom mutation for driver to assign themselves to a ride request
+  assignDriverToRide: a.mutation()
+    .arguments({
+      rideID: a.string().required(),
+    })
+    .returns(a.ref('AssignDriverResponse'))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(assignDriver)),
+
+}).authorization((allow) => [allow.resource(postConfirmation), allow.resource(joinRide), allow.resource(notificationOperations), allow.resource(rideOperations), allow.resource(rideRequestOperations), allow.resource(assignDriver)]);
 
 export type Schema = ClientSchema<typeof schema>;
 

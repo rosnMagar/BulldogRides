@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { useRides } from "../../hooks/useRides";
 import RideCard from "./RideCard";
-import { Container, Title, Loader, Text, Stack, Select, Group, SegmentedControl } from "@mantine/core";
+import { Container, Title, Loader, Text, Stack, Select, Group, Input } from "@mantine/core";
+import { useAuth } from "../../hooks/useAuth";
 
 type RideStatus = "OPEN" | "FULL" | "COMPLETED" | "CANCELLED";
 type RideType = "OFFER" | "REQUEST";
 
 export default function RideList() {
+    const { isDriver } = useAuth();
     const [statusFilter, setStatusFilter] = useState<RideStatus | null>("OPEN");
-    const [rideType, setRideType] = useState<RideType>("OFFER");
 
     const { rides, loading, error } = useRides({
-        statusFilter,
-        rideType,
+        statusFilter: statusFilter,
+        rideType: isDriver ? "REQUEST" : "OFFER",
         excludePastRides: true
     });
 
@@ -36,18 +37,11 @@ export default function RideList() {
     }
 
     return (
-        <Container size="md" py="xl">
-            <Title order={2} mb="lg" ta="center">Available Rides</Title>
+        <Container size="md" py="xl" px="xs">
+            <Title order={2} mb="lg" ta="center">{isDriver ? "Here are all the requests from users." : "Here are all the offers from volunteer drivers."}</Title>
 
-            <Group justify="space-between" mb="md">
-                <SegmentedControl
-                    value={rideType}
-                    onChange={(value) => setRideType(value as RideType)}
-                    data={[
-                        { value: "OFFER", label: "Ride Offers" },
-                        { value: "REQUEST", label: "Ride Requests" },
-                    ]}
-                />
+            <Group grow preventGrowOverflow={false} mb="md" gap="md">
+                <Input size="sm" style={{ flex: 7 }} placeholder="Search..." />
                 <Select
                     placeholder="Status"
                     value={statusFilter}
@@ -59,7 +53,7 @@ export default function RideList() {
                         { value: "CANCELLED", label: "Cancelled" },
                     ]}
                     clearable
-                    w={130}
+                    style={{ flex: 3 }}
                 />
             </Group>
 
@@ -70,7 +64,7 @@ export default function RideList() {
             ) : (
                 <Stack gap="md">
                     {rides.map((ride) => (
-                        <RideCard key={ride.id} ride={ride} />
+                        <RideCard key={ride.id} ride={ride} isDriver={isDriver} />
                     ))}
                 </Stack>
             )}
