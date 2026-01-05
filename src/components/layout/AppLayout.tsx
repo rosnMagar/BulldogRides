@@ -30,38 +30,53 @@ export default function AppLayout() {
             padding="xs"
         >
             <AppShell.Header style={{ zIndex: 1100 }}>
-                <Group h="100%" px="md" justify="space-between">
-                    <Group>
+                <Group h="100%" px="md" justify="space-between" wrap="nowrap">
+                    <Group gap="xs" wrap="nowrap" style={{ flexShrink: 1, minWidth: 0 }}>
                         <Burger
                             opened={opened}
                             onClick={toggle}
                             hiddenFrom="sm"
                             size="sm"
                         />
-                        <Title order={3}>Bulldog Rides</Title>
+                        <Title order={3} size="h4" style={{
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            fontSize: 'calc(var(--mantine-font-size-md) * 1.1)'
+                        }}>
+                            Bulldog Rides
+                        </Title>
                     </Group>
-                    <Group style={{ zIndex: 99999 }}>
-                        <Tooltip label={isDriver ? "Driver Mode" : "Rider Mode"} refProp="rootRef">
+                    <Group gap="xs" wrap="nowrap" style={{ flexShrink: 0 }}>
+                        <Tooltip label={isDriver ? "Driver Mode" : "Rider Mode"} refProp="rootRef" hiddenFrom="xs">
                             <Switch
-                                size="lg"
+                                size="md"
                                 color="dark"
                                 checked={isDriver}
                                 onChange={handleOnModeChange}
-                                onLabel={<IconSteeringWheel size={20} stroke={2.5} color="var(--mantine-color-blue-6)" />}
-                                offLabel={<IconUser size={20} stroke={2.5} color="var(--mantine-color-yellow-4)" />}
+                                onLabel={<IconSteeringWheel size={16} stroke={2.5} color="var(--mantine-color-blue-6)" />}
+                                offLabel={<IconUser size={16} stroke={2.5} color="var(--mantine-color-yellow-4)" />}
                             />
                         </Tooltip>
+                        <Switch
+                            visibleFrom="xs"
+                            size="lg"
+                            color="dark"
+                            checked={isDriver}
+                            onChange={handleOnModeChange}
+                            onLabel={<IconSteeringWheel size={20} stroke={2.5} color="var(--mantine-color-blue-6)" />}
+                            offLabel={<IconUser size={20} stroke={2.5} color="var(--mantine-color-yellow-4)" />}
+                        />
                         <NotificationBell onClick={openNotifications} />
                         {user && (
-                            <Group>
-                                <Avatar
-                                    size="md"
-                                    radius="md"
-                                    color="violet"
-                                >
-                                    {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
-                                </Avatar>
-                            </Group>
+                            <Avatar
+                                size="sm"
+                                radius="md"
+                                color="violet"
+                                visibleFrom="xs"
+                            >
+                                {user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}
+                            </Avatar>
                         )}
                     </Group>
                 </Group>

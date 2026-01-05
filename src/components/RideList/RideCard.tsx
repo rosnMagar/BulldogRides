@@ -1,7 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { Card, Text, Group, Badge, Stack, Divider, Button } from "@mantine/core";
+import { Card, Text, Group, Badge, Stack, Button, Grid, ThemeIcon } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import {
+    IconMapPin,
+    IconMapPinFilled,
+    IconClock,
+    IconUsers,
+    IconGift
+} from "@tabler/icons-react";
 import type { Schema } from "../../../amplify/data/resource";
 import MiniMap from "../map/MiniMap";
 import { useRideRequests } from "../../hooks/useRideRequests";
@@ -37,6 +44,10 @@ function getStatusColor(status: string | null | undefined): string {
         case "CANCELLED": return "red";
         default: return "gray";
     }
+}
+
+function getTypeColor(type: string | null | undefined): string {
+    return type === "OFFER" ? "blue" : "orange";
 }
 
 export default function RideCard({ ride, isDriver }: RideCardProps) {
@@ -142,11 +153,9 @@ export default function RideCard({ ride, isDriver }: RideCardProps) {
     };
 
     const isOwnRide = ride.driverID === user?.id;
-    const isCreator = ride.creatorID === user?.id;
     const isFull = (ride.seatsAvailable || 0) <= 0;
     const hasDriverAssigned = !!ride.driverID;
-    const pickupDisplay = ride.pickupAddress || `${ride.pickupLat?.toFixed(4)}, ${ride.pickupLong?.toFixed(4)}`;
-    const destinationDisplay = ride.destinationAddress || `${ride.destinationLat?.toFixed(4)}, ${ride.destinationLong?.toFixed(4)}`;
+
     // Check if we have valid coordinates for the map
     const hasValidCoordinates =
         ride.pickupLat != null &&
@@ -171,65 +180,86 @@ export default function RideCard({ ride, isDriver }: RideCardProps) {
                         pickupLng={ride.pickupLong!}
                         destinationLat={ride.destinationLat!}
                         destinationLng={ride.destinationLong!}
-                        height={300}
+                        height={200}
                     />
                 </Card.Section>
             )}
 
             <Stack gap="sm" mt="md">
-                {/* Route */}
-                <Group justify="space-between" align="flex-start">
-                    <Stack gap={4} style={{ flex: 1 }}>
-                        <Text size="sm" c="dimmed">From</Text>
-                        <Text fw={500} lineClamp={1}>{pickupDisplay}</Text>
-                    </Stack>
-                    <Text size="xl" c="dimmed" px="md">→</Text>
-                    <Stack gap={4} style={{ flex: 1 }}>
-                        <Text size="sm" c="dimmed">To</Text>
-                        <Text fw={500} lineClamp={1}>{destinationDisplay}</Text>
-                    </Stack>
+                <Group justify="space-between" mb="xs" wrap="nowrap">
+                    <Badge color={getTypeColor(ride.type)} variant="filled" size="sm">
+                        {ride.type === "OFFER" ? "Ride Offer" : "Ride Request"}
+                    </Badge>
+                    <Badge color={getStatusColor(ride.status)} variant="light" size="sm">
+                        {ride.status || "Unknown"}
+                    </Badge>
                 </Group>
 
-                <Divider />
+                <Grid mb="xs" gutter="xs">
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                        <Group align="flex-start" wrap="nowrap">
+                            <ThemeIcon color="green" size="md" radius="xl">
+                                <IconMapPin size={14} />
+                            </ThemeIcon>
+                            <Stack gap={0} style={{ overflow: "hidden" }}>
+                                <Text size="xs" c="dimmed" lh={1}>From</Text>
+                                <Text size="sm" fw={500} truncate="end">{ride.pickupAddress || `${ride.pickupLat?.toFixed(2)}, ${ride.pickupLong?.toFixed(2)}`}</Text>
+                            </Stack>
+                        </Group>
+                    </Grid.Col>
+                    <Grid.Col span={{ base: 12, sm: 6 }}>
+                        <Group align="flex-start" wrap="nowrap">
+                            <ThemeIcon color="red" size="md" radius="xl">
+                                <IconMapPinFilled size={14} />
+                            </ThemeIcon>
+                            <Stack gap={0} style={{ overflow: "hidden" }}>
+                                <Text size="xs" c="dimmed" lh={1}>To</Text>
+                                <Text size="sm" fw={500} truncate="end">{ride.destinationAddress || `${ride.destinationLat?.toFixed(2)}, ${ride.destinationLong?.toFixed(2)}`}</Text>
+                            </Stack>
+                        </Group>
+                    </Grid.Col>
+                </Grid>
 
-                {/* Details */}
-                <Group justify="space-between">
-                    <Text size="sm">{formatDateTime(ride.pickupTime)}</Text>
-                    <Group>
-                        <Badge color={getStatusColor(ride.status)} variant="light">
-                            {ride.status || "Unknown"}
-                        </Badge>
-                        {rewardText && (
-                            <Badge variant="outline" color="gray">{rewardText}</Badge>
-                        )}
+                <Group gap="sm" mb="md" wrap="wrap">
+                    <Group gap={4}>
+                        <IconClock size={14} color="gray" />
+                        <Text size="xs" c="dimmed">{formatDateTime(ride.pickupTime)}</Text>
                     </Group>
-                </Group>
-                <Group justify="space-between">
-                    <Text size="sm">{ride.seatsAvailable} seats available</Text>
-                    {isDriver ? (
-                        // Driver mode: show Offer Ride button for REQUEST type rides
-                        <Button
-                            size="xs"
-                            color="green"
-                            onClick={(e) => { e.stopPropagation(); handleOfferRide(); }}
-                            loading={assignLoading}
-                            disabled={isCreator || hasDriverAssigned || isFull || hasExistingRequest}
-                        >
-                            {isCreator ? "Your Request" : hasDriverAssigned ? "Driver Assigned" : "Offer Ride"}
-                        </Button>
-                    ) : (
-                        // Rider mode: show Join Ride button for OFFER type rides
-                        <Button
-                            size="xs"
-                            color="blue"
-                            onClick={(e) => { e.stopPropagation(); handleJoinRide(); }}
-                            loading={joinLoading}
-                            disabled={isOwnRide || isFull || hasExistingRequest}
-                        >
-                            {isOwnRide ? "Your Ride" : hasExistingRequest ? "Requested ✓" : isFull ? "Full" : "Join Ride"}
-                        </Button>
+                    <Group gap={4}>
+                        <IconUsers size={14} color="gray" />
+                        <Text size="xs" c="dimmed">{ride.seatsAvailable} seats left</Text>
+                    </Group>
+                    {rewardText && (
+                        <Group gap={4}>
+                            <IconGift size={14} color="gray" />
+                            <Text size="xs" c="dimmed">{rewardText}</Text>
+                        </Group>
                     )}
                 </Group>
+
+                {isDriver ? (
+                    <Button
+                        fullWidth
+                        size="xs"
+                        color="green"
+                        onClick={(e) => { e.stopPropagation(); handleOfferRide(); }}
+                        loading={assignLoading}
+                        disabled={isOwnRide || hasDriverAssigned || isFull || hasExistingRequest}
+                    >
+                        {isOwnRide ? "Your Request" : hasDriverAssigned ? "Driver Assigned" : "Offer to Drive"}
+                    </Button>
+                ) : (
+                    <Button
+                        fullWidth
+                        size="xs"
+                        color="blue"
+                        onClick={(e) => { e.stopPropagation(); handleJoinRide(); }}
+                        loading={joinLoading}
+                        disabled={isOwnRide || isFull || hasExistingRequest}
+                    >
+                        {isOwnRide ? "Your Ride" : hasExistingRequest ? "Request Sent" : isFull ? "Full" : "Join Ride"}
+                    </Button>
+                )}
             </Stack>
         </Card>
     );

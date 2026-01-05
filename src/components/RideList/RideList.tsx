@@ -37,10 +37,16 @@ export default function RideList() {
 
     return (
         <Container size="md" py="xl" px="xs">
-            <Title order={2} mb="lg" ta="center">{isDriver ? "Here are all the requests from users." : "Here are all the offers from volunteer drivers."}</Title>
+            <Title order={2} mb="lg" ta="center" size="h3" style={{ fontSize: 'var(--mantine-font-size-xl)' }}>
+                {isDriver ? "Rider Requests" : "Driver Offers"}
+            </Title>
 
-            <Group grow preventGrowOverflow={false} mb="md" gap="md">
-                <Input size="sm" style={{ flex: 7 }} placeholder="Search..." />
+            <Group grow mb="md" gap="sm">
+                <Input
+                    size="sm"
+                    placeholder="Search..."
+                    style={{ flex: 1, minWidth: '200px' }}
+                />
                 <Select
                     placeholder="Status"
                     value={statusFilter}
@@ -52,7 +58,7 @@ export default function RideList() {
                         { value: "CANCELLED", label: "Cancelled" },
                     ]}
                     clearable
-                    style={{ flex: 3 }}
+                    style={{ flex: 0, minWidth: '120px' }}
                 />
             </Group>
 

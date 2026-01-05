@@ -1,9 +1,6 @@
 import { Group } from "@mantine/core";
 import { DateInput, TimeInput } from "@mantine/dates";
 
-// Constants
-const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-
 interface DateTimeFieldsProps {
     date: string | null;
     onDateChange: (date: string | null) => void;
@@ -19,19 +16,46 @@ export default function DateTimeFields({
     onTimeChange,
     timeError,
 }: DateTimeFieldsProps) {
-    const today = new Date().toISOString().split('T')[0];
-    const maxDate = new Date(Date.now() + ONE_WEEK_MS).toISOString().split('T')[0];
+    // Correctly handle date conversion without timezone shifts
+    const parseDate = (dateStr: string | null) => {
+        if (!dateStr) return null;
+        const [year, month, day] = dateStr.split('-').map(Number);
+        return new Date(year, month - 1, day);
+    };
+
+    const formatDate = (date: Date | null) => {
+        if (!date) return null;
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 7);
 
     return (
-        <Group grow mb="md">
+        <Group grow mb="md" align="flex-start">
             <DateInput
                 label="Departure Date"
                 placeholder="Pick a date"
-                value={date}
-                onChange={onDateChange}
+                value={parseDate(date)}
+                onChange={(val: any) => {
+                    if (val instanceof Date) {
+                        onDateChange(formatDate(val));
+                    } else {
+                        onDateChange(val);
+                    }
+                }}
                 required
                 minDate={today}
                 maxDate={maxDate}
+                inputMode="none"
+                styles={{
+                    input: { cursor: 'pointer' }
+                }}
             />
             <TimeInput
                 label="Departure Time"
@@ -39,6 +63,10 @@ export default function DateTimeFields({
                 onChange={onTimeChange}
                 required
                 error={timeError}
+                inputMode="none"
+                styles={{
+                    input: { cursor: 'pointer' }
+                }}
             />
         </Group>
     );

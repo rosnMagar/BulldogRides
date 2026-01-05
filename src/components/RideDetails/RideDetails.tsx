@@ -176,13 +176,13 @@ export default function RideDetails() {
 
             {/* Map */}
             {hasValidCoordinates && (
-                <Paper radius="md" mb="lg" style={{ overflow: "hidden" }}>
+                <Paper radius="md" mb="md" style={{ overflow: "hidden" }}>
                     <MiniMap
                         pickupLat={ride.pickupLat!}
                         pickupLng={ride.pickupLong!}
                         destinationLat={ride.destinationLat!}
                         destinationLng={ride.destinationLong!}
-                        height={350}
+                        height={window.innerWidth < 600 ? 250 : 350}
                     />
                 </Paper>
             )}
