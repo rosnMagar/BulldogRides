@@ -5,7 +5,6 @@ import { Container, Title, Loader, Text, Stack, Select, Group, Input } from "@ma
 import { useAuth } from "../../hooks/useAuth";
 
 type RideStatus = "OPEN" | "FULL" | "COMPLETED" | "CANCELLED";
-type RideType = "OFFER" | "REQUEST";
 
 export default function RideList() {
     const { isDriver } = useAuth();

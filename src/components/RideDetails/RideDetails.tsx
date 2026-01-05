@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router";
 import {
     Container,
     Paper,
-    Text,
     Group,
     Badge,
     Button,

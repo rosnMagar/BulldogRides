@@ -39,18 +39,6 @@ function getStatusColor(status: string | null | undefined): string {
     }
 }
 
-// Get reward display text
-function getRewardText(reward: string | null | undefined): string {
-    switch (reward) {
-        case "MEAL_SWIPES": return "Meal Swipes";
-        case "HOSE_DINNER": return "Hose Dinner";
-        case "GAS_MONEY": return "Gas Money";
-        case "OTHER": return "Other";
-        case "NONE": return "";
-        default: return "";
-    }
-}
-
 export default function RideCard({ ride, isDriver }: RideCardProps) {
     const navigate = useNavigate();
     const { user } = useAuth();
