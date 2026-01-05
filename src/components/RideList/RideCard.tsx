@@ -195,6 +195,14 @@ export default function RideCard({ ride, isDriver }: RideCardProps) {
                     </Badge>
                 </Group>
 
+                {/* Creator Info */}
+                <Group gap={4} mb="xs">
+                    <Text size="xs" c="dimmed">Posted by:</Text>
+                    <Text size="xs" fw={500}>
+                        {(ride as any).creator ? `${(ride as any).creator.firstName} ${(ride as any).creator.lastName}` : "Unknown User"}
+                    </Text>
+                </Group>
+
                 <Grid mb="xs" gutter="xs">
                     <Grid.Col span={{ base: 12, sm: 6 }}>
                         <Group align="flex-start" wrap="nowrap">

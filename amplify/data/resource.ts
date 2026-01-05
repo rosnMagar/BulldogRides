@@ -21,6 +21,8 @@ const schema = a.schema({
       phone: a.string().required(),
       profilePicture: a.string(),
       bio: a.string(),
+      vehicleDescription: a.string(),
+      vehiclePicture: a.string(),
 
       // Relationships
       ridesAsDriver: a.hasMany('Ride', 'driverID'),
@@ -207,6 +209,16 @@ const schema = a.schema({
     .authorization((allow) => [allow.authenticated()])
     .handler(a.handler.function(rideRequestOperations)),
 
+  // Custom response type for getMyRides query
+  GetMyRidesResponse: a.customType({
+    success: a.boolean(),
+    error: a.string(),
+    asCreator: a.json(),
+    asDriver: a.json(),
+    asPassenger: a.json(),
+    all: a.json(),
+  }),
+
   // Custom response type for assignDriverToRide mutation
   AssignDriverResponse: a.customType({
     success: a.boolean(),
@@ -221,6 +233,13 @@ const schema = a.schema({
     .returns(a.ref('AssignDriverResponse'))
     .authorization((allow) => [allow.authenticated()])
     .handler(a.handler.function(assignDriver)),
+
+  // Custom query for getting user's rides (server-side identity)
+  getMyRides: a.query()
+    .arguments({})
+    .returns(a.ref('GetMyRidesResponse'))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(rideOperations)),
 
 }).authorization((allow) => [allow.resource(postConfirmation), allow.resource(joinRide), allow.resource(notificationOperations), allow.resource(rideOperations), allow.resource(rideRequestOperations), allow.resource(assignDriver)]);
 

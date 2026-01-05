@@ -11,6 +11,7 @@ import CreateRideRequest from './components/rides/CreateRideRequest';
 import Dashboard from './components/Dashboard';
 import RideList from './components/RideList/RideList';
 import RideDetails from './components/RideDetails/RideDetails';
+import ProfileEditForm from './components/profile/ProfileEditForm';
 
 /**
  * App Architecture:
@@ -43,6 +44,7 @@ export default function App() {
               <Route path="/requestRide" element={<CreateRideRequest />} />
               <Route path="/rides" element={<RideList />} />
               <Route path="/ride/:id" element={<RideDetails />} />
+              <Route path="/profile" element={<ProfileEditForm />} />
             </Route>
           </Route>
         </Routes>
