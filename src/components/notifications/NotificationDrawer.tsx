@@ -18,6 +18,7 @@ interface NotificationItemData {
     read: boolean;
     createdAt: string;
     relatedRequestID?: string;
+    relatedRequestStatus?: string;
 }
 
 function NotificationItem({ notification, onMarkRead, onRefetch }: {
@@ -80,7 +81,10 @@ function NotificationItem({ notification, onMarkRead, onRefetch }: {
     };
 
     // Determine if buttons should be shown (only for RIDE_REQUEST type)
-    const showActionButtons = notification.type === 'RIDE_REQUEST' && notification.relatedRequestID;
+    const isRideRequest = notification.type === 'RIDE_REQUEST' && notification.relatedRequestID;
+    const isPending = notification.relatedRequestStatus === 'PENDING';
+    const showActionButtons = isRideRequest && isPending;
+    const showStatus = isRideRequest && !isPending && notification.relatedRequestStatus;
 
     return (
         <Stack
@@ -133,6 +137,11 @@ function NotificationItem({ notification, onMarkRead, onRefetch }: {
                             Decline
                         </Button>
                     </Group>
+                )}
+                {showStatus && (
+                    <Badge variant="dot" color={notification.relatedRequestStatus === 'ACCEPTED' ? 'green' : 'red'}>
+                        {notification.relatedRequestStatus}
+                    </Badge>
                 )}
             </Group>
         </Stack>

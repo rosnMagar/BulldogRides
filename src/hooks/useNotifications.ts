@@ -10,6 +10,7 @@ interface NotificationItem {
     userID: string;
     relatedRideID?: string;
     relatedRequestID?: string;
+    relatedRequestStatus?: string;
     createdAt: string;
     updatedAt: string;
 }

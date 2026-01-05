@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router";
 import { Card, Text, Group, Badge, Stack, Divider, Button } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import type { Schema } from "../../../amplify/data/resource";
@@ -51,10 +52,16 @@ function getRewardText(reward: string | null | undefined): string {
 }
 
 export default function RideCard({ ride, isDriver }: RideCardProps) {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const { createRequest, loading: joinLoading, error: joinError } = useRideRequests();
     const { assignDriver, loading: assignLoading, error: assignError } = useDriverAssignment();
     const [hasExistingRequest, setHasExistingRequest] = useState(false);
+
+    // Navigate to ride details page
+    const handleCardClick = () => {
+        navigate(`/ride/${ride.id}`);
+    };
 
     // Check if user has already requested this ride
     useEffect(() => {
@@ -124,12 +131,14 @@ export default function RideCard({ ride, isDriver }: RideCardProps) {
                 message: 'You must be logged in to offer a ride',
                 color: 'red'
             });
+
             return;
         }
 
         const success = await assignDriver(ride.id);
 
         if (success) {
+            setHasExistingRequest(true);
             notifications.show({
                 title: 'You are now the driver!',
                 message: 'The requester will be notified that you have volunteered to drive.',
@@ -158,7 +167,14 @@ export default function RideCard({ ride, isDriver }: RideCardProps) {
         ride.destinationLong != null;
 
     return (
-        <Card shadow="sm" padding="lg" radius="md" withBorder>
+        <Card
+            shadow="sm"
+            padding="lg"
+            radius="md"
+            withBorder
+            onClick={handleCardClick}
+            style={{ cursor: "pointer" }}
+        >
             {/* Mini Map Preview - edge to edge */}
             {hasValidCoordinates && (
                 <Card.Section>
@@ -207,9 +223,9 @@ export default function RideCard({ ride, isDriver }: RideCardProps) {
                         <Button
                             size="xs"
                             color="green"
-                            onClick={handleOfferRide}
+                            onClick={(e) => { e.stopPropagation(); handleOfferRide(); }}
                             loading={assignLoading}
-                            disabled={isCreator || hasDriverAssigned}
+                            disabled={isCreator || hasDriverAssigned || isFull || hasExistingRequest}
                         >
                             {isCreator ? "Your Request" : hasDriverAssigned ? "Driver Assigned" : "Offer Ride"}
                         </Button>
@@ -218,7 +234,7 @@ export default function RideCard({ ride, isDriver }: RideCardProps) {
                         <Button
                             size="xs"
                             color="blue"
-                            onClick={handleJoinRide}
+                            onClick={(e) => { e.stopPropagation(); handleJoinRide(); }}
                             loading={joinLoading}
                             disabled={isOwnRide || isFull || hasExistingRequest}
                         >

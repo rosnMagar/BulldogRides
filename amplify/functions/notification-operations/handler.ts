@@ -29,6 +29,7 @@ interface NotificationItem {
     userID: string;
     relatedRideID?: string;
     relatedRequestID?: string;
+    relatedRequestStatus?: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -69,10 +70,20 @@ export const getMyNotifications: AppSyncResolverHandler<GetNotificationsArgs, Ge
             throw new Error(errors[0]?.message || "Failed to fetch notifications");
         }
 
-        // Sort by creation date (newest first)
-        const sorted = (data || [])
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-            .map(n => ({
+        // Fetch related request statuses if they exist
+        const notificationsWithStatus = await Promise.all((data || []).map(async (n) => {
+            let status: string | undefined = undefined;
+
+            if (n.relatedRequestID) {
+                try {
+                    const { data: request } = await client.models.RideRequest.get({ id: n.relatedRequestID });
+                    status = request?.status || undefined;
+                } catch (e) {
+                    console.error(`Error fetching status for request ${n.relatedRequestID}:`, e);
+                }
+            }
+
+            return {
                 id: n.id,
                 type: n.type || 'RIDE_REQUEST',
                 title: n.title,
@@ -81,9 +92,14 @@ export const getMyNotifications: AppSyncResolverHandler<GetNotificationsArgs, Ge
                 userID: n.userID,
                 relatedRideID: n.relatedRideID || undefined,
                 relatedRequestID: n.relatedRequestID || undefined,
+                relatedRequestStatus: status,
                 createdAt: n.createdAt,
                 updatedAt: n.updatedAt,
-            }));
+            };
+        }));
+
+        // Sort by creation date (newest first)
+        const sorted = notificationsWithStatus.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
         return {
             success: true,

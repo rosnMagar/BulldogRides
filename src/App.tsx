@@ -10,6 +10,7 @@ import CreateRideOffer from './components/rides/CreateRideOffer';
 import CreateRideRequest from './components/rides/CreateRideRequest';
 import Dashboard from './components/Dashboard';
 import RideList from './components/RideList/RideList';
+import RideDetails from './components/RideDetails/RideDetails';
 
 /**
  * App Architecture:
@@ -23,7 +24,8 @@ import RideList from './components/RideList/RideList';
  *                           ├── / → Dashboard
  *                           ├── /offerRide → CreateRideOffer
  *                           ├── /requestRide → CreateRideRequest
- *                           └── /rides → RideList
+ *                           ├── /rides → RideList
+ *                           └── /ride/:id → RideDetails
  */
 export default function App() {
   return (
@@ -40,6 +42,7 @@ export default function App() {
               <Route path="/offerRide" element={<CreateRideOffer />} />
               <Route path="/requestRide" element={<CreateRideRequest />} />
               <Route path="/rides" element={<RideList />} />
+              <Route path="/ride/:id" element={<RideDetails />} />
             </Route>
           </Route>
         </Routes>

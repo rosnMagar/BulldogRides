@@ -120,6 +120,7 @@ const schema = a.schema({
     userID: a.string(),
     relatedRideID: a.string(),
     relatedRequestID: a.string(),
+    relatedRequestStatus: a.string(),
     createdAt: a.string(),
     updatedAt: a.string(),
   }),
