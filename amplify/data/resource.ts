@@ -5,6 +5,7 @@ import { notificationOperations } from '../functions/notification-operations/res
 import { rideOperations } from '../functions/ride-operations/resource';
 import { rideRequestOperations } from '../functions/ride-request-operations/resource';
 import { assignDriver } from '../functions/assign-driver/resource';
+import { approvedRidersOperations } from '../functions/approved-riders-operations/resource';
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -241,7 +242,32 @@ const schema = a.schema({
     .authorization((allow) => [allow.authenticated()])
     .handler(a.handler.function(rideOperations)),
 
-}).authorization((allow) => [allow.resource(postConfirmation), allow.resource(joinRide), allow.resource(notificationOperations), allow.resource(rideOperations), allow.resource(rideRequestOperations), allow.resource(assignDriver)]);
+  // Custom type for approved rider item
+  ApprovedRiderItem: a.customType({
+    id: a.string(),
+    firstName: a.string(),
+    lastName: a.string(),
+    profilePicture: a.string(),
+    joinedAt: a.string(),
+  }),
+
+  // Custom response type for getApprovedRiders query
+  GetApprovedRidersResponse: a.customType({
+    success: a.boolean(),
+    error: a.string(),
+    riders: a.json(),
+  }),
+
+  // Custom query for getting approved riders for a ride
+  getApprovedRiders: a.query()
+    .arguments({
+      rideID: a.string().required(),
+    })
+    .returns(a.ref('GetApprovedRidersResponse'))
+    .authorization((allow) => [allow.authenticated()])
+    .handler(a.handler.function(approvedRidersOperations)),
+
+}).authorization((allow) => [allow.resource(postConfirmation), allow.resource(joinRide), allow.resource(notificationOperations), allow.resource(rideOperations), allow.resource(rideRequestOperations), allow.resource(assignDriver), allow.resource(approvedRidersOperations)]);
 
 export type Schema = ClientSchema<typeof schema>;
 

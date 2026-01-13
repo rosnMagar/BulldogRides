@@ -7,13 +7,15 @@ import {
     IconMapPinFilled,
     IconClock,
     IconUsers,
-    IconGift
+    IconGift,
+    IconUserCheck
 } from "@tabler/icons-react";
 import type { Schema } from "../../../amplify/data/resource";
 import MiniMap from "../map/MiniMap";
 import { useRideRequests } from "../../hooks/useRideRequests";
 import { useDriverAssignment } from "../../hooks/useDriverAssignment";
 import { useAuth } from "../../hooks/useAuth";
+import { useApprovedRiders } from "../../hooks/useApprovedRiders";
 import { client } from "../../lib/amplifyClient";
 
 type Ride = Schema["Ride"]["type"];
@@ -56,6 +58,7 @@ export default function RideCard({ ride, isDriver }: RideCardProps) {
     const { createRequest, loading: joinLoading, error: joinError } = useRideRequests();
     const { assignDriver, loading: assignLoading, error: assignError } = useDriverAssignment();
     const [hasExistingRequest, setHasExistingRequest] = useState(false);
+    const { riders } = useApprovedRiders(ride.id);
 
     // Navigate to ride details page
     const handleCardClick = () => {
@@ -237,6 +240,12 @@ export default function RideCard({ ride, isDriver }: RideCardProps) {
                         <IconUsers size={14} color="gray" />
                         <Text size="xs" c="dimmed">{ride.seatsAvailable} seats left</Text>
                     </Group>
+                    {riders.length > 0 && (
+                        <Group gap={4}>
+                            <IconUserCheck size={14} color="green" />
+                            <Text size="xs" c="green" fw={500}>{riders.length} joined</Text>
+                        </Group>
+                    )}
                     {rewardText && (
                         <Group gap={4}>
                             <IconGift size={14} color="gray" />

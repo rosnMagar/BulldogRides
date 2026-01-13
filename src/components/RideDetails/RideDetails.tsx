@@ -19,6 +19,7 @@ import MiniMap from "../map/MiniMap";
 import RouteInfo from "./RouteInfo";
 import RideInfo from "./RideInfo";
 import PersonCard from "./PersonCard";
+import ApprovedRidersList from "./ApprovedRidersList";
 import { useRideRequests } from "../../hooks/useRideRequests";
 import { useDriverAssignment } from "../../hooks/useDriverAssignment";
 import { useAuth } from "../../hooks/useAuth";
@@ -200,6 +201,9 @@ export default function RideDetails() {
                     <PersonCard title="Driver" person={driver} variant="driver" emptyText="No driver assigned yet" />
                 </Grid.Col>
             </Grid>
+
+            {/* Approved Riders */}
+            <ApprovedRidersList rideID={ride.id} />
 
             {/* Action Button */}
             <Paper shadow="sm" p="lg" radius="md" withBorder>
