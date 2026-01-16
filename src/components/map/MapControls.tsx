@@ -6,7 +6,9 @@ import L from "leaflet";
 interface ControlButton {
     id: string;
     label: string;
+    icon: string;
     backgroundColor: string;
+    hoverColor: string;
     onClick: () => void;
 }
 
@@ -22,17 +24,22 @@ interface MapControlsProps {
     routeInfo?: RouteInfo | null;
 }
 
-// Shared button styles
+// Modern button styles with smooth transitions
 const buttonBaseStyle = `
+    display: flex;
+    align-items: center;
+    gap: 8px;
     padding: 10px 16px;
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 600;
     white-space: nowrap;
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: all 0.2s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 `;
 
 // Format helpers
@@ -69,18 +76,20 @@ export default function MapControls({
             container.style.cssText = `
                 display: flex;
                 gap: 1rem;
-                padding: 10px 16px;
-                background: rgba(0, 0, 0, 0.8);
+                padding: 12px 18px;
+                background: rgba(0, 0, 0, 0.85);
+                backdrop-filter: blur(10px);
                 border: none;
-                border-radius: 6px;
+                border-radius: 10px;
                 font-size: 14px;
                 color: white;
-                box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             `;
 
             container.innerHTML = `
-                <span><strong>Distance:</strong> ${formatDistance(routeInfo.distance)}</span>
-                <span><strong>Time:</strong> ${formatDuration(routeInfo.duration)}</span>
+                <span><strong>📍 Distance:</strong> ${formatDistance(routeInfo.distance)}</span>
+                <span><strong>⏱️ Time:</strong> ${formatDuration(routeInfo.duration)}</span>
             `;
 
             L.DomEvent.disableClickPropagation(container);
@@ -99,36 +108,81 @@ export default function MapControls({
 
         control.onAdd = () => {
             const container = L.DomUtil.create("div", "leaflet-bar leaflet-control");
-            container.style.cssText = "display: flex; flex-direction: row; gap: 8px; background: transparent; border: none; box-shadow: none;";
+            const isMobile = window.innerWidth < 768;
+            const isSmallMobile = window.innerWidth < 480;
 
-            // Button configurations
+            // Horizontal flexbox layout with wrapping for all screen sizes
+            container.style.cssText = `
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: ${isMobile ? '4px' : '10px'};
+                background: transparent;
+                border: none;
+                box-shadow: none;
+                max-width: ${isMobile ? '100%' : 'none'};
+            `;
+
+            // Modern button configurations with darker colors for better contrast on light maps
             const buttons: ControlButton[] = [
                 {
                     id: "reset-pickup",
                     label: "Reset Pickup",
-                    backgroundColor: "#333",
+                    icon: "↺",
+                    backgroundColor: "#5b21b6", // Deep purple
+                    hoverColor: "#4c1d95",
                     onClick: onResetPickup,
                 },
                 {
                     id: "reset-destination",
                     label: "Reset Destination",
-                    backgroundColor: "#c0392b",
+                    icon: "↺",
+                    backgroundColor: "#dc2626", // Bold red
+                    hoverColor: "#b91c1c",
                     onClick: onResetDestination,
                 },
                 {
                     id: "locate-me",
                     label: "Locate Me",
-                    backgroundColor: "#2980b9",
+                    icon: "📍",
+                    backgroundColor: "#0891b2", // Deep cyan
+                    hoverColor: "#0e7490",
                     onClick: onLocateMe,
                 },
             ];
 
-            // Create buttons from config
+            // Create buttons with responsive styling
             buttons.forEach((btn) => {
                 const button = L.DomUtil.create("button", "", container);
                 button.id = btn.id;
-                button.innerHTML = btn.label;
-                button.style.cssText = buttonBaseStyle + `background: ${btn.backgroundColor};`;
+
+                // Always show full labels with icons
+                button.innerHTML = `<span style="font-size: ${isSmallMobile ? '12px' : '16px'};">${btn.icon}</span><span>${btn.label}</span>`;
+
+                // Compact responsive button styling for horizontal layout
+                const responsiveStyle = buttonBaseStyle + `
+                    background: ${btn.backgroundColor};
+                    padding: ${isSmallMobile ? '6px 8px' : isMobile ? '8px 10px' : '10px 16px'};
+                    font-size: ${isSmallMobile ? '10px' : isMobile ? '11px' : '14px'};
+                    gap: ${isSmallMobile ? '3px' : isMobile ? '4px' : '8px'};
+                    white-space: nowrap;
+                    flex-shrink: 0;
+                `;
+
+                button.style.cssText = responsiveStyle;
+
+                // Hover effects
+                button.onmouseenter = () => {
+                    button.style.background = btn.hoverColor;
+                    button.style.transform = "translateY(-2px)";
+                    button.style.boxShadow = "0 4px 12px rgba(0,0,0,0.25)";
+                };
+                button.onmouseleave = () => {
+                    button.style.background = btn.backgroundColor;
+                    button.style.transform = "translateY(0)";
+                    button.style.boxShadow = "0 2px 8px rgba(0,0,0,0.15)";
+                };
+
                 button.onclick = (e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -144,7 +198,26 @@ export default function MapControls({
         };
 
         control.addTo(map);
+
+        // Re-render on window resize for responsiveness
+        const handleResize = () => {
+            control.remove();
+            const newControl = new L.Control({ position: "bottomright" });
+            newControl.onAdd = control.onAdd;
+            newControl.addTo(map);
+        };
+
+        let resizeTimeout: NodeJS.Timeout;
+        const debouncedResize = () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(handleResize, 250);
+        };
+
+        window.addEventListener('resize', debouncedResize);
+
         return () => {
+            window.removeEventListener('resize', debouncedResize);
+            clearTimeout(resizeTimeout);
             control.remove();
         };
     }, [map, onResetPickup, onResetDestination, onLocateMe]);

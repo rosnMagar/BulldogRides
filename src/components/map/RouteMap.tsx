@@ -14,6 +14,11 @@ interface RouteMapProps {
     onPickupReset?: () => void;
     onDestinationReset?: () => void;
     initialPosition?: [number, number];
+    // External coordinates from form state (e.g. from address autocomplete)
+    pickupLat?: number;
+    pickupLng?: number;
+    destinationLat?: number;
+    destinationLng?: number;
 }
 
 export default function RouteMap({
@@ -22,7 +27,11 @@ export default function RouteMap({
     onDestinationSelect,
     onPickupReset,
     onDestinationReset,
-    initialPosition = [40.1948, -92.5832] // Default to Truman
+    initialPosition = [40.1948, -92.5832], // Default to Truman
+    pickupLat,
+    pickupLng,
+    destinationLat,
+    destinationLng
 }: RouteMapProps) {
 
     const [pickupMarkerPosition, setPickupMarkerPosition] = useState<LatLng | null>(null);
@@ -30,6 +39,23 @@ export default function RouteMap({
     const [destinationMarkerPosition, setDestinationMarkerPosition] = useState<LatLng | null>(null);
     const [destinationSelected, setDestinationSelected] = useState(false);
     const [route, setRoute] = useState<RouteResult | null>(null);
+
+    // Sync external coordinates with map markers
+    useEffect(() => {
+        if (pickupLat !== undefined && pickupLng !== undefined) {
+            const latlng = L.latLng(pickupLat, pickupLng);
+            setPickupMarkerPosition(latlng);
+            setPickupSelected(true);
+        }
+    }, [pickupLat, pickupLng]);
+
+    useEffect(() => {
+        if (destinationLat !== undefined && destinationLng !== undefined) {
+            const latlng = L.latLng(destinationLat, destinationLng);
+            setDestinationMarkerPosition(latlng);
+            setDestinationSelected(true);
+        }
+    }, [destinationLat, destinationLng]);
 
     const resetPickup = useCallback(() => {
         setPickupMarkerPosition(null);

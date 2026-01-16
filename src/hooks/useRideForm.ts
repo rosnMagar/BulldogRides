@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { client } from "../lib/amplifyClient";
-import { getAddress } from "../services/addressService";
+import { reverseGeocode } from "../services/geocodingService";
 
 type RideType = "OFFER" | "REQUEST";
 
@@ -97,8 +97,9 @@ export function useRideForm({ type, onSuccess }: UseRideFormOptions): UseRideFor
         setPickupLatitude(lat);
         setPickupLongitude(lng);
         setPickupAddressLoading(true);
-        getAddress(lat, lng)
-            .then(address => setPickupAddress(address))
+        reverseGeocode(lat, lng)
+            .then(result => setPickupAddress(result.displayName))
+            .catch(error => console.error('Reverse geocoding failed:', error))
             .finally(() => setPickupAddressLoading(false));
     }, []);
 
@@ -106,8 +107,9 @@ export function useRideForm({ type, onSuccess }: UseRideFormOptions): UseRideFor
         setDestinationLatitude(lat);
         setDestinationLongitude(lng);
         setDestinationAddressLoading(true);
-        getAddress(lat, lng)
-            .then(address => setDestinationAddress(address))
+        reverseGeocode(lat, lng)
+            .then(result => setDestinationAddress(result.displayName))
+            .catch(error => console.error('Reverse geocoding failed:', error))
             .finally(() => setDestinationAddressLoading(false));
     }, []);
 

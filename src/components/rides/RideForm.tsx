@@ -69,8 +69,12 @@ export default function RideForm({
             <LocationFields
                 pickupAddress={pickup.address}
                 pickupAddressLoading={pickup.addressLoading}
+                pickupLat={typeof pickup.latitude === 'number' ? pickup.latitude : undefined}
+                pickupLng={typeof pickup.longitude === 'number' ? pickup.longitude : undefined}
                 destinationAddress={destination.address}
                 destinationAddressLoading={destination.addressLoading}
+                destinationLat={typeof destination.latitude === 'number' ? destination.latitude : undefined}
+                destinationLng={typeof destination.longitude === 'number' ? destination.longitude : undefined}
                 onPickupSelect={handlePickupSelect}
                 onDestinationSelect={handleDestinationSelect}
             />
