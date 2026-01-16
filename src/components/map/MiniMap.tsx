@@ -50,16 +50,76 @@ export default function MiniMap({
             .bindPopup("Destination")
             .addTo(map);
 
-        // Fit bounds to show both markers
-        const bounds = L.latLngBounds([
-            [pickupLat, pickupLng],
-            [destinationLat, destinationLng]
-        ]);
-        map.fitBounds(bounds, { padding: [20, 20] });
+        // Calculate distance between points (rough approximation in degrees)
+        const latDiff = Math.abs(pickupLat - destinationLat);
+        const lngDiff = Math.abs(pickupLng - destinationLng);
+        const distance = Math.sqrt(latDiff * latDiff + lngDiff * lngDiff);
+
+        // If points are very close together (within ~0.01 degrees, about 1km)
+        if (distance < 0.01) {
+            // Center on midpoint with a fixed reasonable zoom
+            const centerLat = (pickupLat + destinationLat) / 2;
+            const centerLng = (pickupLng + destinationLng) / 2;
+            map.setView([centerLat, centerLng], 13);
+        } else {
+            // Fit bounds to show both markers
+            const bounds = L.latLngBounds([
+                [pickupLat, pickupLng],
+                [destinationLat, destinationLng]
+            ]);
+
+            // Use fitBounds with padding and maxZoom to ensure both points are visible
+            map.fitBounds(bounds, {
+                padding: [60, 60],
+                maxZoom: 13  // Prevent excessive zoom
+            });
+        }
 
         mapInstanceRef.current = map;
 
+        // Fix for half-rendered map - multiple approaches
+        // 1. Use whenReady event
+        map.whenReady(() => {
+            map.invalidateSize();
+        });
+
+        // 2. Add a delayed invalidation for animated containers
+        setTimeout(() => {
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.invalidateSize();
+            }
+        }, 200);
+
+        // 3. Add another one for slower renders
+        setTimeout(() => {
+            if (mapInstanceRef.current) {
+                mapInstanceRef.current.invalidateSize();
+            }
+        }, 500);
+
+        // 4. Handle tab visibility changes with IntersectionObserver
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting && mapInstanceRef.current) {
+                        // Map became visible, invalidate size
+                        setTimeout(() => {
+                            if (mapInstanceRef.current) {
+                                mapInstanceRef.current.invalidateSize();
+                            }
+                        }, 50);
+                    }
+                });
+            },
+            { threshold: 0.1 }
+        );
+
+        if (mapRef.current) {
+            observer.observe(mapRef.current);
+        }
+
         return () => {
+            observer.disconnect();
             map.remove();
             mapInstanceRef.current = null;
         };

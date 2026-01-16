@@ -22,7 +22,7 @@ const bulldogTheme = createTheme({
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <MantineProvider theme={bulldogTheme} forceColorScheme='dark'>
+    <MantineProvider theme={bulldogTheme} defaultColorScheme='light'>
       <Notifications position="top-right" zIndex={100000} />
       <App />
     </MantineProvider>

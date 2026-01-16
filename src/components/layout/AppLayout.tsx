@@ -51,21 +51,21 @@ export default function AppLayout() {
                         <Tooltip label={isDriver ? "Driver Mode" : "Rider Mode"} refProp="rootRef" hiddenFrom="xs">
                             <Switch
                                 size="md"
-                                color="dark"
+                                color="violet"
                                 checked={isDriver}
                                 onChange={handleOnModeChange}
-                                onLabel={<IconSteeringWheel size={16} stroke={2.5} color="var(--mantine-color-blue-6)" />}
-                                offLabel={<IconUser size={16} stroke={2.5} color="var(--mantine-color-yellow-4)" />}
+                                onLabel={<IconSteeringWheel size={16} stroke={2.5} />}
+                                offLabel={<IconUser size={16} stroke={2.5} />}
                             />
                         </Tooltip>
                         <Switch
                             visibleFrom="xs"
                             size="lg"
-                            color="dark"
+                            color="violet"
                             checked={isDriver}
                             onChange={handleOnModeChange}
-                            onLabel={<IconSteeringWheel size={20} stroke={2.5} color="var(--mantine-color-blue-6)" />}
-                            offLabel={<IconUser size={20} stroke={2.5} color="var(--mantine-color-yellow-4)" />}
+                            onLabel={<IconSteeringWheel size={20} stroke={2.5} />}
+                            offLabel={<IconUser size={20} stroke={2.5} />}
                         />
                         <NotificationBell onClick={openNotifications} />
                         {user && (

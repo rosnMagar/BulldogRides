@@ -183,7 +183,7 @@ export default function RideCard({ ride, isDriver }: RideCardProps) {
                         pickupLng={ride.pickupLong!}
                         destinationLat={ride.destinationLat!}
                         destinationLng={ride.destinationLong!}
-                        height={200}
+                        height={window.innerWidth < 600 ? 250 : 350}
                     />
                 </Card.Section>
             )}
@@ -233,11 +233,11 @@ export default function RideCard({ ride, isDriver }: RideCardProps) {
 
                 <Group gap="sm" mb="md" wrap="wrap">
                     <Group gap={4}>
-                        <IconClock size={14} color="gray" />
+                        <IconClock size={14} style={{ opacity: 0.6 }} />
                         <Text size="xs" c="dimmed">{formatDateTime(ride.pickupTime)}</Text>
                     </Group>
                     <Group gap={4}>
-                        <IconUsers size={14} color="gray" />
+                        <IconUsers size={14} style={{ opacity: 0.6 }} />
                         <Text size="xs" c="dimmed">{ride.seatsAvailable} seats left</Text>
                     </Group>
                     {riders.length > 0 && (
@@ -248,7 +248,7 @@ export default function RideCard({ ride, isDriver }: RideCardProps) {
                     )}
                     {rewardText && (
                         <Group gap={4}>
-                            <IconGift size={14} color="gray" />
+                            <IconGift size={14} style={{ opacity: 0.6 }} />
                             <Text size="xs" c="dimmed">{rewardText}</Text>
                         </Group>
                     )}

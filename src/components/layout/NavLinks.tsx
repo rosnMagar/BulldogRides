@@ -5,9 +5,12 @@ import {
     IconCar,
     IconThumbUp,
     IconList,
-    IconLogout
+    IconLogout,
+    IconSun,
+    IconMoon
 } from "@tabler/icons-react";
 import { useAuth } from "../../hooks/useAuth";
+import { useMantineColorScheme } from "@mantine/core";
 
 interface NavLinksProps {
     onNavigate?: () => void;
@@ -23,6 +26,7 @@ const navItems = [
 export default function NavLinks({ onNavigate }: NavLinksProps) {
     const location = useLocation();
     const { isDriver, signOut } = useAuth();
+    const { colorScheme, toggleColorScheme } = useMantineColorScheme();
 
     const handleLogout = async () => {
         await signOut();
@@ -50,6 +54,11 @@ export default function NavLinks({ onNavigate }: NavLinksProps) {
                     />
                 )
             })}
+            <NavLink
+                label={colorScheme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                leftSection={colorScheme === 'dark' ? <IconSun size={18} /> : <IconMoon size={18} />}
+                onClick={toggleColorScheme}
+            />
             <NavLink
                 label="Logout"
                 leftSection={<IconLogout size={18} />}
