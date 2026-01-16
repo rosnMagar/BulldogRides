@@ -55,15 +55,6 @@ export default function LocationFields({
         setDestinationInput(destinationAddress);
     }, [destinationAddress]);
 
-    // Debug: Log when suggestions change
-    useEffect(() => {
-        console.log('[LocationFields] pickupSuggestions updated:', pickupSuggestions.length, pickupSuggestions);
-    }, [pickupSuggestions]);
-
-    useEffect(() => {
-        console.log('[LocationFields] destinationSuggestions updated:', destinationSuggestions.length, destinationSuggestions);
-    }, [destinationSuggestions]);
-
     // Search pickup address when debounced value changes (min 5 chars)
     useEffect(() => {
         if (debouncedPickup.length >= 5) {
@@ -88,14 +79,11 @@ export default function LocationFields({
 
     const searchPickupAddress = async (address: string) => {
         setPickupSearching(true);
-        console.log('[LocationFields] Searching pickup address:', address);
         try {
             const results = await geocodeAddress(address);
-            console.log('[LocationFields] Pickup results received:', results.length, results);
             setPickupSuggestions(results);
-            console.log('[LocationFields] Pickup suggestions state updated');
         } catch (error) {
-            console.error('[LocationFields] Pickup geocoding failed:', error);
+            console.error('Pickup geocoding failed:', error);
         } finally {
             setPickupSearching(false);
         }
@@ -103,14 +91,11 @@ export default function LocationFields({
 
     const searchDestinationAddress = async (address: string) => {
         setDestinationSearching(true);
-        console.log('[LocationFields] Searching destination address:', address);
         try {
             const results = await geocodeAddress(address);
-            console.log('[LocationFields] Destination results received:', results.length, results);
             setDestinationSuggestions(results);
-            console.log('[LocationFields] Destination suggestions state updated');
         } catch (error) {
-            console.error('[LocationFields] Destination geocoding failed:', error);
+            console.error('Destination geocoding failed:', error);
         } finally {
             setDestinationSearching(false);
         }
@@ -133,10 +118,6 @@ export default function LocationFields({
             setDestinationInput(selected.displayName);
         }
     };
-
-    // Debug: Log when rendering
-    console.log('[LocationFields] Rendering - Pickup suggestions:', pickupSuggestions.length);
-    console.log('[LocationFields] Rendering - Destination suggestions:', destinationSuggestions.length);
 
     return (
         <>
