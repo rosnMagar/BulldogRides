@@ -146,6 +146,8 @@ This project is open source and available for the Kirksville community.
 
 For questions or support, please open an issue on GitHub.
 
+Demo: [here](https://main.d22epmzwkakj8v.amplifyapp.com/)
+
 ---
 
 Built for the Kirksville community
