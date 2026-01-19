@@ -1,5 +1,5 @@
 import { Outlet, useNavigate } from "react-router";
-import { AppShell, Avatar, Burger, Group, Switch, Title, Tooltip } from "@mantine/core";
+import { AppShell, Avatar, Burger, Group, Switch, Title } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import NavLinks from "./NavLinks";
 import NotificationBell from "../notifications/NotificationBell";
@@ -48,18 +48,7 @@ export default function AppLayout() {
                         </Title>
                     </Group>
                     <Group gap="xs" wrap="nowrap" style={{ flexShrink: 0 }}>
-                        <Tooltip label={isDriver ? "Driver Mode" : "Rider Mode"} refProp="rootRef" hiddenFrom="xs">
-                            <Switch
-                                size="md"
-                                color="violet"
-                                checked={isDriver}
-                                onChange={handleOnModeChange}
-                                onLabel={<IconSteeringWheel size={16} stroke={2.5} />}
-                                offLabel={<IconUser size={16} stroke={2.5} />}
-                            />
-                        </Tooltip>
                         <Switch
-                            visibleFrom="xs"
                             size="lg"
                             color="violet"
                             checked={isDriver}
